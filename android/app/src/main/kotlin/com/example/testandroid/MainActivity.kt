@@ -1,4 +1,4 @@
-package com.example.sncf_objet_perdu
+package com.example.testandroid
 
 import io.flutter.embedding.android.FlutterActivity
 

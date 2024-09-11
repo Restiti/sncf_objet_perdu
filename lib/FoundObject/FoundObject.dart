@@ -17,6 +17,20 @@ class FoundObject {
     required this.gcOboNomRecordtypeScC,
   });
 
+  String getColumnValue(String column) {
+    switch (column) {
+      case 'gcOboTypeC':
+        return gcOboTypeC.toLowerCase();
+      case 'gcOboGareOrigineRName':
+        return gcOboGareOrigineRName.toLowerCase();
+      case 'gcOboNatureC':
+        return gcOboNatureC.toLowerCase();
+      case 'gcOboNomRecordtypeScC':
+        return gcOboNomRecordtypeScC.toLowerCase();
+      default:
+        return '';
+    }
+  }
   factory FoundObject.fromJson(Map<String, dynamic> json) {
     return FoundObject(
       date: json['date'],
