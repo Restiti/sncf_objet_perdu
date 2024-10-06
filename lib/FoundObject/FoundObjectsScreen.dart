@@ -42,10 +42,6 @@ class FoundObjectsScreen extends StatelessWidget {
                   create: (_) => SearchProvider()..setSuggestions(nature),
                   child: MySearchBar(suggestions: nature),
                 ),
-                ChangeNotifierProvider(
-                  create: (_) => SearchProvider()..setSuggestions(nomRecordtypeSc),
-                  child: MySearchBar(suggestions: nomRecordtypeSc),
-                ),
                 Expanded(
                   child: Consumer<FoundObjectsProvider>(
                     builder: (context, provider, child) {

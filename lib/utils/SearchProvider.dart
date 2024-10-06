@@ -10,6 +10,11 @@ class SearchProvider with ChangeNotifier {
   TextEditingController get textEditingController => _textEditingController;
   List<String> get filteredSuggestions => _filteredSuggestions;
 
+  String _selectedSuggestion = '';
+
+  String get selectedSuggestion => _selectedSuggestion;
+
+
   void setSuggestions(List<String> suggestions) {
     _suggestions = suggestions;
     _filteredSuggestions = suggestions;
@@ -32,7 +37,10 @@ class SearchProvider with ChangeNotifier {
     _textEditingController.text = suggestion;
     filterSuggestions(suggestion);
     toggleSuggestions();
+    _selectedSuggestion = suggestion;
+    notifyListeners();
   }
+
 
   @override
   void dispose() {

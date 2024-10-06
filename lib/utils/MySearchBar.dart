@@ -31,7 +31,9 @@ class MySearchBar extends StatelessWidget {
             IconButton(
               icon: Icon(Icons.cancel),
               onPressed: () {
-                searchProvider.toggleSuggestions();
+                if(searchProvider.showSuggestions){
+                  searchProvider.toggleSuggestions();
+                }
               },
             ),
           ],
