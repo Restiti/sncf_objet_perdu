@@ -17,6 +17,7 @@ class FoundObject {
     required this.gcOboNomRecordtypeScC,
   });
 
+
   String getColumnValue(String column) {
     switch (column) {
       case 'gcOboTypeC':
@@ -33,13 +34,14 @@ class FoundObject {
   }
   factory FoundObject.fromJson(Map<String, dynamic> json) {
     return FoundObject(
-      date: json['date'],
-      gcOboDateHeureRestitutionC: json['gc_obo_date_heure_restitution_c'],
-      gcOboGareOrigineRName: json['gc_obo_gare_origine_r_name'],
-      gcOboGareOrigineRCodeUicC: json['gc_obo_gare_origine_r_code_uic_c'],
-      gcOboNatureC: json['gc_obo_nature_c'],
-      gcOboTypeC: json['gc_obo_type_c'],
-      gcOboNomRecordtypeScC: json['gc_obo_nom_recordtype_sc_c'],
+      date: json['date'] ?? 'Date inconnue',  // Valeur par défaut si la date est nulle
+      gcOboDateHeureRestitutionC: json['gc_obo_date_heure_restitution_c'] ?? 'Non précisé',  // Valeur par défaut si c'est null
+      gcOboGareOrigineRName: json['gc_obo_gare_origine_r_name'] ?? 'Gare inconnue',
+      gcOboGareOrigineRCodeUicC: json['gc_obo_gare_origine_r_code_uic_c'] ?? '',
+      gcOboNatureC: json['gc_obo_nature_c'] ?? 'Nature inconnue',
+      gcOboTypeC: json['gc_obo_type_c'] ?? 'Type inconnu',
+      gcOboNomRecordtypeScC: json['gc_obo_nom_recordtype_sc_c'] ?? '',
     );
   }
+
 }

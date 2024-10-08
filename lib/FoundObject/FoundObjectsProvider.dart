@@ -42,7 +42,8 @@ class FoundObjectsProvider with ChangeNotifier {
     try {
       _foundObjects = await _apiService.fetchFoundObjects(
         city: _gareOrigine,
-        orderBy: _orderBy == 'date_desc' ? '-date' : 'date',  // Utilisation du tri par date décroissante
+        orderBy: _orderBy == 'date_desc' ? '-date' : 'date',
+        totalRecords: 100, // Récupérer 1000 enregistrements
       );
     } catch (error) {
       hasError = true;
