@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-import '../CustomBottomSheet/CustomBottomSheet.dart';
-import '../Details/DetailsScreen.dart';
-import '../Gare/GareProvider.dart';
+import '../CategoryObjects/CategoryObjectsScreen.dart';
+import 'FoundObject.dart';
+import 'FoundObjectItem.dart';
 import 'FoundObjectsProvider.dart';
 
 class FoundObjectsScreen extends StatefulWidget {
@@ -12,93 +11,111 @@ class FoundObjectsScreen extends StatefulWidget {
 }
 
 class _FoundObjectsScreenState extends State<FoundObjectsScreen> {
-  final ScrollController _scrollController = ScrollController();
-  late CustomBottomSheet _customBottomSheet;
-
   @override
   void initState() {
     super.initState();
-
-    _customBottomSheet = CustomBottomSheet(gareSuggestions: []);
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<FoundObjectsProvider>(context, listen: false).refreshFoundObjects();
-      Provider.of<GareProvider>(context, listen: false).fetchGares().then((_) {
-        setState(() {
-          _customBottomSheet = CustomBottomSheet(gareSuggestions: Provider.of<GareProvider>(context, listen: false).gares);
-        });
-      });
     });
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  // Afficher le filtre avec les gares
-  void _showFilter() {
-    final gareProvider = Provider.of<GareProvider>(context, listen: false);
-    if (gareProvider.gares.isNotEmpty) {
-      _customBottomSheet = CustomBottomSheet(gareSuggestions: gareProvider.gares);
-      _customBottomSheet.show(context, 'filtre');
-    } else {
-      print('No gares available to display in the filter');
-      // Vous pouvez aussi afficher un message ou gérer cette situation ici
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Found Objects'),
+        title: Text('Objets trouvés'),
       ),
       body: Column(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () => _customBottomSheet.show(context, 'tri'),
-                  child: const Text('Tri'),
+          // Section des filtres et tris
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Logique pour afficher le tri
+                    },
+                    child: const Text('Tri'),
+                  ),
                 ),
-              ),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: _showFilter,
-                  child: const Text('Filtre'),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Logique pour afficher les filtres
+                    },
+                    child: const Text('Filtre'),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
+
+          // Section des objets par catégorie avec défilement horizontal
           Expanded(
             child: Consumer<FoundObjectsProvider>(
               builder: (context, provider, child) {
-                if (provider.foundObjects.isEmpty && provider.isLoading) {
+                if (provider.isLoading) {
                   return Center(child: CircularProgressIndicator());
                 } else if (provider.hasError) {
-                  return Center(child: Text('Error: ${provider.errorMessage}'));
+                  return Center(child: Text('Erreur: ${provider.errorMessage}'));
                 } else {
+                  final objectsByType = provider.objectsByType;
+
                   return ListView.builder(
-                    itemCount: provider.foundObjects.length,
+                    itemCount: objectsByType.keys.length,
                     itemBuilder: (context, index) {
-                      final foundObject = provider.foundObjects[index];
-                      return ListTile(
-                        title: Text(foundObject.gcOboNatureC),
-                        subtitle: Text('${foundObject.gcOboTypeC} - ${foundObject.gcOboGareOrigineRName}'),
-                        trailing: Text(foundObject.date),
-                        onTap: () {
-                          // Navigate to the DetailsScreen when an item is tapped
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => DetailsScreen(foundObject: foundObject),
+                      String objectType = objectsByType.keys.elementAt(index);
+                      List<FoundObject> objects = objectsByType[objectType]!;
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    objectType,
+                                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    // Naviguer vers la page de tous les objets de la catégorie
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => CategoryObjectsScreen(
+                                          category: objectType,
+                                          objects: objects,  // Passer les objets de la catégorie
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  child: Text('Voir tous'),
+                                ),
+                              ],
                             ),
-                          );
-                        },
+                          ),
+                          Container(
+                            height: 250,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: objects.length,
+                              itemBuilder: (context, index) {
+                                final foundObject = objects[index];
+                                return FoundObjectItem(object: foundObject);
+                              },
+                            ),
+                          ),
+                        ],
                       );
                     },
                   );

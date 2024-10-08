@@ -10,27 +10,30 @@ class FoundObjectsProvider with ChangeNotifier {
   bool hasError = false;
   String errorMessage = '';
 
-  // Storing the current sort order and filters
-  String _orderBy = 'date';  // Default to ascending
-  String? _gareOrigine;  // Filter by station
+  // Trier par défaut par date décroissante
+  String _orderBy = 'date_desc';
+  String? _gareOrigine;
 
   String get orderBy => _orderBy;
   String? get gareOrigine => _gareOrigine;
 
   final ApiService _apiService = ApiService();
 
-  // Function to set sorting order and notify listeners
+  // Fonction pour changer l'ordre de tri
   void setOrderBy(String orderBy) {
     _orderBy = orderBy;
     notifyListeners();
+    refreshFoundObjects();  // Recharger les objets avec le nouveau tri
   }
 
-  // Function to set station filter and notify listeners
+  // Fonction pour définir la gare d'origine à filtrer
   void setGareOrigine(String? gare) {
     _gareOrigine = gare;
     notifyListeners();
+    refreshFoundObjects();  // Recharger les objets avec le filtre de gare
   }
 
+  // Récupérer les objets avec tri et filtres
   Future<void> refreshFoundObjects() async {
     isLoading = true;
     hasError = false;
@@ -39,7 +42,7 @@ class FoundObjectsProvider with ChangeNotifier {
     try {
       _foundObjects = await _apiService.fetchFoundObjects(
         city: _gareOrigine,
-        orderBy: _orderBy,
+        orderBy: _orderBy == 'date_desc' ? '-date' : 'date',  // Utilisation du tri par date décroissante
       );
     } catch (error) {
       hasError = true;
@@ -48,5 +51,17 @@ class FoundObjectsProvider with ChangeNotifier {
 
     isLoading = false;
     notifyListeners();
+  }
+
+  // Regrouper les objets par type (gcOboTypeC)
+  Map<String, List<FoundObject>> get objectsByType {
+    Map<String, List<FoundObject>> groupedObjects = {};
+    for (var object in _foundObjects) {
+      if (!groupedObjects.containsKey(object.gcOboTypeC)) {
+        groupedObjects[object.gcOboTypeC] = [];
+      }
+      groupedObjects[object.gcOboTypeC]!.add(object);
+    }
+    return groupedObjects;
   }
 }
