@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
+import '../Gare/GareProvider.dart';
 import 'SearchProvider.dart';
 
 class MySearchBar extends StatelessWidget {
@@ -11,6 +11,7 @@ class MySearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final searchProvider = Provider.of<SearchProvider>(context);
+    final gareProvider = Provider.of<GareProvider>(context, listen: false);  // Accéder au GareProvider
 
     return Column(
       children: <Widget>[
@@ -24,14 +25,14 @@ class MySearchBar extends StatelessWidget {
                 },
                 onChanged: searchProvider.filterSuggestions,
                 decoration: InputDecoration(
-                  hintText: 'Search...',
+                  hintText: 'Rechercher...',
                 ),
               ),
             ),
             IconButton(
               icon: Icon(Icons.cancel),
               onPressed: () {
-                if(searchProvider.showSuggestions){
+                if (searchProvider.showSuggestions) {
                   searchProvider.toggleSuggestions();
                 }
               },
@@ -40,15 +41,18 @@ class MySearchBar extends StatelessWidget {
         ),
         if (searchProvider.showSuggestions)
           SizedBox(
-            height: 200, // adjust this value as needed
+            height: 200,
             child: ListView.builder(
               itemCount: searchProvider.filteredSuggestions.length,
               itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(searchProvider.filteredSuggestions[index]),
-                  onTap: () {
-                    searchProvider.selectSuggestion(
-                        searchProvider.filteredSuggestions[index]);
+                final suggestion = searchProvider.filteredSuggestions[index];
+                final isSelected = gareProvider.selectedGares.contains(suggestion);
+
+                return CheckboxListTile(
+                  title: Text(suggestion),
+                  value: isSelected,
+                  onChanged: (bool? value) {
+                    gareProvider.toggleGareSelection(suggestion);  // Ajouter ou retirer une gare
                   },
                 );
               },
