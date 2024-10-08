@@ -1,15 +1,16 @@
-import 'package:flutter/cupertino.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
+
+import 'GareService.dart';
 
 class GareProvider with ChangeNotifier {
   List<String> _gares = [];
-  List<String> _selectedGares = [];  // Liste des gares sélectionnées
-  bool _isLoading = false;           // Indicateur de chargement
-  bool _hasError = false;            // Indicateur d'erreur
+  List<String> _selectedGares = [];
+  bool _isLoading = false;
+  bool _hasError = false;
+  final GareService _gareService = GareService();  // Utiliser le service
 
   List<String> get gares => _gares;
-  List<String> get selectedGares => _selectedGares;  // Accéder aux gares sélectionnées
+  List<String> get selectedGares => _selectedGares;
   bool get isLoading => _isLoading;
   bool get hasError => _hasError;
 
@@ -30,22 +31,13 @@ class GareProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      // Appel API pour récupérer les gares
-      final response = await http.get(Uri.parse('https://data.sncf.com/api/explore/v2.1/catalog/datasets/objets-trouves-restitution/records?select=gc_obo_gare_origine_r_name&limit=100&offset=0&groupby=gc_obo_gare_origine_r_name'));
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        List<String> gares = (data['results'] as List).map((item) => item['gc_obo_gare_origine_r_name'].toString()).toList();
-
-        _gares = gares; // Stocker les gares récupérées
-      } else {
-        _hasError = true;
-      }
+      // Appel au service pour récupérer les gares
+      _gares = await _gareService.fetchGares();
     } catch (e) {
       _hasError = true;
     }
 
     _isLoading = false;
-    notifyListeners();  // Notifier l'interface utilisateur
+    notifyListeners();
   }
 }
