@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../CustomBottomSheet/CustomBottomSheet.dart';
+import '../Details/DetailsScreen.dart';
 import '../Gare/GareProvider.dart';
 import 'FoundObjectsProvider.dart';
 
@@ -21,7 +22,7 @@ class _FoundObjectsScreenState extends State<FoundObjectsScreen> {
     _customBottomSheet = CustomBottomSheet(gareSuggestions: []);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<FoundObjectsProvider>(context, listen: false).fetchFoundObjects();
+      Provider.of<FoundObjectsProvider>(context, listen: false).refreshFoundObjects();
       Provider.of<GareProvider>(context, listen: false).fetchGares().then((_) {
         setState(() {
           _customBottomSheet = CustomBottomSheet(gareSuggestions: Provider.of<GareProvider>(context, listen: false).gares);
@@ -29,7 +30,6 @@ class _FoundObjectsScreenState extends State<FoundObjectsScreen> {
       });
     });
   }
-
 
   @override
   void dispose() {
@@ -60,13 +60,17 @@ class _FoundObjectsScreenState extends State<FoundObjectsScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              ElevatedButton(
-                onPressed: () => _customBottomSheet.show(context, 'tri'),
-                child: const Text('Tri'),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () => _customBottomSheet.show(context, 'tri'),
+                  child: const Text('Tri'),
+                ),
               ),
-              ElevatedButton(
-                onPressed: _showFilter,
-                child: const Text('Filtre'),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: _showFilter,
+                  child: const Text('Filtre'),
+                ),
               ),
             ],
           ),
@@ -83,9 +87,18 @@ class _FoundObjectsScreenState extends State<FoundObjectsScreen> {
                     itemBuilder: (context, index) {
                       final foundObject = provider.foundObjects[index];
                       return ListTile(
-                        title: SelectableText(foundObject.gcOboNatureC),
-                        subtitle: SelectableText('${foundObject.gcOboTypeC} - ${foundObject.gcOboGareOrigineRName}'),
-                        trailing: SelectableText(foundObject.date),
+                        title: Text(foundObject.gcOboNatureC),
+                        subtitle: Text('${foundObject.gcOboTypeC} - ${foundObject.gcOboGareOrigineRName}'),
+                        trailing: Text(foundObject.date),
+                        onTap: () {
+                          // Navigate to the DetailsScreen when an item is tapped
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => DetailsScreen(foundObject: foundObject),
+                            ),
+                          );
+                        },
                       );
                     },
                   );

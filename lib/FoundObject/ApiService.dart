@@ -10,13 +10,12 @@ class ApiService {
     String? category,
     String? nature,
     String? nomRecordtypeSc,
-    String? orderBy,  // Ajout du paramètre orderBy pour le tri
+    String? orderBy,  // Sorting by date (asc/desc)
     int? limit,
     int? offset,
   }) async {
     final queryParams = <String, String>{};
 
-    // Vérifier et initialiser la clause 'where'
     if (city != null) {
       _addToWhereClause(queryParams, 'gc_obo_gare_origine_r_name = "${Uri.encodeComponent(city)}"');
     }
@@ -25,23 +24,9 @@ class ApiService {
       _addToWhereClause(queryParams, 'gc_obo_nature_c = "${Uri.encodeComponent(category)}"');
     }
 
-    if (nature != null) {
-      _addToWhereClause(queryParams, 'gc_obo_nature_c = "${Uri.encodeComponent(nature)}"');
-    }
-
-    if (nomRecordtypeSc != null) {
-      _addToWhereClause(queryParams, 'gc_obo_nom_recordtype_sc_c = "${Uri.encodeComponent(nomRecordtypeSc)}"');
-    }
-
-    if (offset != null) {
-      queryParams["offset"] = offset.toString();
-    }
-
     if (orderBy != null) {
-      queryParams["order_by"] = orderBy;  // Ajouter le tri si spécifié
+      queryParams["order_by"] = orderBy;
     }
-
-    print("Parametre de la requete: $queryParams");
 
     final uri = Uri.https(
       'data.sncf.com',
@@ -49,26 +34,18 @@ class ApiService {
       queryParams,
     );
 
-    print("Requete: $uri");
-
     final response = await http.get(uri);
 
     if (response.statusCode == 200) {
       List jsonResponse = json.decode(response.body)['results'];
-      print(jsonResponse);
       return jsonResponse.map((data) => FoundObject.fromJson(data)).toList();
     } else {
       throw Exception('Failed to load found objects');
     }
   }
 
-  // Méthode pour ajouter une clause au paramètre 'where'
   void _addToWhereClause(Map<String, String> queryParams, String newCondition) {
     final whereClause = queryParams['where'] ?? '';
-    if (whereClause.isNotEmpty) {
-      queryParams['where'] = '$whereClause or $newCondition';
-    } else {
-      queryParams['where'] = newCondition;
-    }
+    queryParams['where'] = whereClause.isNotEmpty ? '$whereClause or $newCondition' : newCondition;
   }
 }

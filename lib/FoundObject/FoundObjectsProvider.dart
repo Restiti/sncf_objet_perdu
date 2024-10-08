@@ -5,33 +5,42 @@ import 'FoundObject.dart';
 class FoundObjectsProvider with ChangeNotifier {
   List<FoundObject> _foundObjects = [];
   List<FoundObject> get foundObjects => _foundObjects;
-  int offset = 0;
+
   bool isLoading = false;
   bool hasError = false;
   String errorMessage = '';
 
+  // Storing the current sort order and filters
+  String _orderBy = 'date';  // Default to ascending
+  String? _gareOrigine;  // Filter by station
+
+  String get orderBy => _orderBy;
+  String? get gareOrigine => _gareOrigine;
+
   final ApiService _apiService = ApiService();
 
-  Future<void> fetchFoundObjects({
-    String? gareOrigine,  // Peut-être une chaîne de gares séparées par des virgules
-    String? category,
-    String? nature,
-    String? orderBy,
-  }) async {
+  // Function to set sorting order and notify listeners
+  void setOrderBy(String orderBy) {
+    _orderBy = orderBy;
+    notifyListeners();
+  }
+
+  // Function to set station filter and notify listeners
+  void setGareOrigine(String? gare) {
+    _gareOrigine = gare;
+    notifyListeners();
+  }
+
+  Future<void> refreshFoundObjects() async {
     isLoading = true;
     hasError = false;
     notifyListeners();
 
     try {
-      // Appel à l'API avec pagination et filtres
       _foundObjects = await _apiService.fetchFoundObjects(
-        city: gareOrigine,
-        category: category,
-        nature: nature,
-        orderBy: orderBy,
-        offset: offset,
+        city: _gareOrigine,
+        orderBy: _orderBy,
       );
-      offset += 50;  // Pagination
     } catch (error) {
       hasError = true;
       errorMessage = error.toString();
@@ -39,21 +48,5 @@ class FoundObjectsProvider with ChangeNotifier {
 
     isLoading = false;
     notifyListeners();
-  }
-
-  Future<void> refreshFoundObjects({
-    String? gareOrigine,
-    String? category,
-    String? nature,
-    String? orderBy,
-  }) async {
-    _foundObjects.clear();
-    offset = 0;
-    await fetchFoundObjects(
-      gareOrigine: gareOrigine,
-      category: category,
-      nature: nature,
-      orderBy: orderBy,
-    );
   }
 }

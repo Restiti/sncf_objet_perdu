@@ -17,7 +17,7 @@ class CustomBottomSheet {
       isScrollControlled: true,
       builder: (BuildContext context) {
         return FractionallySizedBox(
-          heightFactor: 0.8,
+          heightFactor: 0.5,
           child: BottomSheetContent(
             type: type,
             gareSuggestions: gareSuggestions,
