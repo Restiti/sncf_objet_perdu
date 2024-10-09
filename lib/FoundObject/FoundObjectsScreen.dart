@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../CategoryObjects/CategoryObjectsScreen.dart';
+import '../CustomBottomSheet/CustomBottomSheet.dart';
+import '../Details/DetailsScreen.dart';
+import '../Gare/GareProvider.dart';
 import 'FoundObject.dart';
 import 'FoundObjectItem.dart';
 import 'FoundObjectsProvider.dart';
@@ -11,12 +14,41 @@ class FoundObjectsScreen extends StatefulWidget {
 }
 
 class _FoundObjectsScreenState extends State<FoundObjectsScreen> {
+  final ScrollController _scrollController = ScrollController();
+  late CustomBottomSheet _customBottomSheet;
+
   @override
   void initState() {
     super.initState();
+
+    _customBottomSheet = CustomBottomSheet(gareSuggestions: []);
+
+    // Refresh the found objects and fetch the gares for the filter
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<FoundObjectsProvider>(context, listen: false).refreshFoundObjects();
+      Provider.of<GareProvider>(context, listen: false).fetchGares().then((_) {
+        setState(() {
+          _customBottomSheet = CustomBottomSheet(gareSuggestions: Provider.of<GareProvider>(context, listen: false).gares);
+        });
+      });
     });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  // Show filter for gares
+  void _showFilter() {
+    final gareProvider = Provider.of<GareProvider>(context, listen: false);
+    if (gareProvider.gares.isNotEmpty) {
+      _customBottomSheet = CustomBottomSheet(gareSuggestions: gareProvider.gares);
+      _customBottomSheet.show(context, 'filtre');
+    } else {
+      print('No gares available to display in the filter');
+    }
   }
 
   @override
@@ -27,7 +59,7 @@ class _FoundObjectsScreenState extends State<FoundObjectsScreen> {
       ),
       body: Column(
         children: [
-          // Section des filtres et tris
+          // Section for sorting and filtering
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
@@ -35,17 +67,13 @@ class _FoundObjectsScreenState extends State<FoundObjectsScreen> {
               children: [
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () {
-                      // Logique pour afficher le tri
-                    },
+                    onPressed: () => _customBottomSheet.show(context, 'tri'),
                     child: const Text('Tri'),
                   ),
                 ),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () {
-                      // Logique pour afficher les filtres
-                    },
+                    onPressed: _showFilter,
                     child: const Text('Filtre'),
                   ),
                 ),
@@ -53,7 +81,7 @@ class _FoundObjectsScreenState extends State<FoundObjectsScreen> {
             ),
           ),
 
-          // Section des objets par catégorie avec défilement horizontal
+          // Displaying objects by category with horizontal scrolling
           Expanded(
             child: Consumer<FoundObjectsProvider>(
               builder: (context, provider, child) {
@@ -88,13 +116,13 @@ class _FoundObjectsScreenState extends State<FoundObjectsScreen> {
                                 ),
                                 TextButton(
                                   onPressed: () {
-                                    // Naviguer vers la page de tous les objets de la catégorie
+                                    // Navigate to the page showing all objects in this category
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) => CategoryObjectsScreen(
                                           category: objectType,
-                                          objects: objects,  // Passer les objets de la catégorie
+                                          objects: objects,
                                         ),
                                       ),
                                     );
@@ -108,19 +136,18 @@ class _FoundObjectsScreenState extends State<FoundObjectsScreen> {
                             height: 250,
                             child: ListView.builder(
                               scrollDirection: Axis.horizontal,
-                              itemCount: objects.length + 1,  // +1 pour ajouter la card "Voir tous"
+                              itemCount: objects.length + 1,  // +1 to add the "Voir tous" card
                               itemBuilder: (context, index) {
                                 if (index == objects.length) {
-                                  // Card "Voir tous" dans la liste
+                                  // "Voir tous" card at the end of the list
                                   return GestureDetector(
                                     onTap: () {
-                                      // Naviguer vers la page de tous les objets de cette catégorie
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) => CategoryObjectsScreen(
                                             category: objectType,
-                                            objects: objects,  // Passer les objets de la catégorie
+                                            objects: objects,
                                           ),
                                         ),
                                       );
@@ -150,7 +177,7 @@ class _FoundObjectsScreenState extends State<FoundObjectsScreen> {
                                   );
                                 } else {
                                   final foundObject = objects[index];
-                                  return FoundObjectItem(object: foundObject);  // Affichage des objets
+                                  return FoundObjectItem(object: foundObject);
                                 }
                               },
                             ),
