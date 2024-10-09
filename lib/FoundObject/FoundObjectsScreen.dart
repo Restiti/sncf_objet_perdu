@@ -158,6 +158,8 @@ class _FoundObjectsScreenState extends State<FoundObjectsScreen> {
                                     // "Voir tous" card at the end of the list
                                     return GestureDetector(
                                       onTap: () {
+                                        print("Object type: ${objectType}");
+
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(

@@ -28,6 +28,11 @@ class _CategoryObjectsScreenState extends State<CategoryObjectsScreen> {
 
   Future<void> _loadData() async {
     // Charger les objets correspondant à la catégorie via le provider
+    await Provider.of<FoundObjectsProvider>(context, listen: false).fetchFoundObjectsByCategory(type: widget.category);
+  }
+
+  Future<void> _loadDataBack() async {
+    // Charger les objets correspondant à la catégorie via le provider
     await Provider.of<FoundObjectsProvider>(context, listen: false).refreshFoundObjects();
   }
 
@@ -36,7 +41,7 @@ class _CategoryObjectsScreenState extends State<CategoryObjectsScreen> {
     print("User is navigating back with result: $result");
     if (didPop) {
       print("Pop action confirmed");
-      _loadData();
+      _loadDataBack();
     } else {
       print("Pop action was canceled");
     }

@@ -61,7 +61,7 @@ class FoundObjectsProvider with ChangeNotifier {
     required String type,  // Filtre sur le type d'objet (gc_obo_type_c)
     String? city,  // Filtre sur la ville
     String? orderBy,  // Tri par date
-    int totalRecords = 1000,  // Nombre total d'enregistrements à récupérer
+    int totalRecords = 100,  // Nombre total d'enregistrements à récupérer
   }) async {
     print("Je fetch par catégorie");
     isLoading = true;
