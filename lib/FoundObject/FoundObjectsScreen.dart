@@ -108,10 +108,50 @@ class _FoundObjectsScreenState extends State<FoundObjectsScreen> {
                             height: 250,
                             child: ListView.builder(
                               scrollDirection: Axis.horizontal,
-                              itemCount: objects.length,
+                              itemCount: objects.length + 1,  // +1 pour ajouter la card "Voir tous"
                               itemBuilder: (context, index) {
-                                final foundObject = objects[index];
-                                return FoundObjectItem(object: foundObject);
+                                if (index == objects.length) {
+                                  // Card "Voir tous" dans la liste
+                                  return GestureDetector(
+                                    onTap: () {
+                                      // Naviguer vers la page de tous les objets de cette catégorie
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => CategoryObjectsScreen(
+                                            category: objectType,
+                                            objects: objects,  // Passer les objets de la catégorie
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: Container(
+                                      width: 220,
+                                      margin: EdgeInsets.symmetric(horizontal: 12.0),
+                                      decoration: BoxDecoration(
+                                        color: Colors.blueAccent,
+                                        borderRadius: BorderRadius.circular(12),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.grey.withOpacity(0.5),
+                                            spreadRadius: 3,
+                                            blurRadius: 6,
+                                            offset: Offset(0, 3),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          'Voir tous',
+                                          style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  final foundObject = objects[index];
+                                  return FoundObjectItem(object: foundObject);  // Affichage des objets
+                                }
                               },
                             ),
                           ),
