@@ -28,43 +28,56 @@ class _CategoryObjectsScreenState extends State<CategoryObjectsScreen> {
 
   Future<void> _loadData() async {
     // Charger les objets correspondant à la catégorie via le provider
-    await Provider.of<FoundObjectsProvider>(context, listen: false)
-        .fetchFoundObjectsByCategory(type: widget.category, totalRecords: 100);
+    await Provider.of<FoundObjectsProvider>(context, listen: false).refreshFoundObjects();
+  }
+
+  void _onPopInvokedWithResult(bool didPop, dynamic result) {
+    // Cette méthode est appelée lorsque l'utilisateur essaie de quitter cette page
+    print("User is navigating back with result: $result");
+    if (didPop) {
+      print("Pop action confirmed");
+      _loadData();
+    } else {
+      print("Pop action was canceled");
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Objets trouvés - ${widget.category}'),
-      ),
-      body: Consumer<FoundObjectsProvider>(
-        builder: (context, provider, child) {
-          if (provider.isLoading) {
-            return Center(
-              child: CircularProgressIndicator(),  // Affichage du loader pendant le chargement
-            );
-          } else if (provider.hasError) {
-            return Center(
-              child: Text('Erreur: ${provider.errorMessage}'),  // Affichage du message d'erreur
-            );
-          } else if (provider.foundObjects.isEmpty) {
-            return Center(
-              child: Text('Aucun objet trouvé.'),
-            );
-          }
-
-          return ListView.builder(
-            itemCount: provider.foundObjects.length,
-            itemBuilder: (context, index) {
-              final foundObject = provider.foundObjects[index];
-              return Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: FoundObjectItem(object: foundObject),
+    return PopScope(
+      onPopInvokedWithResult: _onPopInvokedWithResult,  // Détecte l'événement pop avec le résultat
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('Objets trouvés - ${widget.category}'),
+        ),
+        body: Consumer<FoundObjectsProvider>(
+          builder: (context, provider, child) {
+            if (provider.isLoading) {
+              return Center(
+                child: CircularProgressIndicator(),  // Affichage du loader pendant le chargement
               );
-            },
-          );
-        },
+            } else if (provider.hasError) {
+              return Center(
+                child: Text('Erreur: ${provider.errorMessage}'),  // Affichage du message d'erreur
+              );
+            } else if (provider.foundObjects.isEmpty) {
+              return Center(
+                child: Text('Aucun objet trouvé.'),
+              );
+            }
+
+            return ListView.builder(
+              itemCount: provider.foundObjects.length,
+              itemBuilder: (context, index) {
+                final foundObject = provider.foundObjects[index];
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: FoundObjectItem(object: foundObject),
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }

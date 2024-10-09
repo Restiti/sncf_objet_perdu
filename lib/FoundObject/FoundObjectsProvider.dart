@@ -63,6 +63,7 @@ class FoundObjectsProvider with ChangeNotifier {
     String? orderBy,  // Tri par date
     int totalRecords = 1000,  // Nombre total d'enregistrements à récupérer
   }) async {
+    print("Je fetch par catégorie");
     isLoading = true;
     hasError = false;
     notifyListeners();
@@ -98,4 +99,5 @@ class FoundObjectsProvider with ChangeNotifier {
     }
     return groupedObjects;
   }
+
 }
