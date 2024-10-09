@@ -60,16 +60,17 @@ class FoundObjectItem extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Image.network(
-              'https://via.placeholder.com/220', // Remplacer par l'URL réelle si disponible
-              height: 120,
-              width: 220,
-              fit: BoxFit.cover,
-            ),
             Padding(
               padding: const EdgeInsets.all(12.0),
               child: Text(
                 object.gcOboNatureC,
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Text(
+                object.gcOboTypeC,
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
