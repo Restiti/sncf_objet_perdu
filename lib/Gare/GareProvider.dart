@@ -23,14 +23,19 @@ class GareProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // Fetch all available stations
+  // Fetch all available stations and ensure uniqueness
   Future<void> fetchGares() async {
     _isLoading = true;
     _hasError = false;
     notifyListeners();
 
     try {
-      _gares = await _gareService.fetchGares();
+      List<String> allGares = await _gareService.fetchAllGares();
+
+      // Utilisation d'un Set pour supprimer les doublons
+      Set<String> uniqueGares = allGares.toSet();
+      _gares = uniqueGares.toList();  // Convertir en List pour l'utilisation dans l'UI
+
     } catch (e) {
       _hasError = true;
     }

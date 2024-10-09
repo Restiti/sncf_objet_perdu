@@ -13,9 +13,10 @@ class GareService {
 
     while (moreData) {
       final List<String> gares = await fetchGares(limit: _limit, offset: offset);
-
+      print("Je fetch");
       if (gares.isNotEmpty) {
         allGares.addAll(gares);
+        print("Offset '${offset}'");
         offset += _limit;  // Incrémenter l'offset pour récupérer les éléments suivants
       } else {
         moreData = false;  // S'il n'y a plus de données, on arrête la boucle
@@ -28,7 +29,7 @@ class GareService {
   // Méthode pour récupérer un seul lot de gares avec limit et offset
   Future<List<String>> fetchGares({int limit = 100, int offset = 0}) async {
     final String url =
-        'https://data.sncf.com/api/explore/v2.1/catalog/datasets/objets-trouves-restitution/records?select=gc_obo_gare_origine_r_name&limit=$limit&offset=$offset&groupby=gc_obo_gare_origine_r_name';
+        'https://data.sncf.com/api/explore/v2.1/catalog/datasets/objets-trouves-restitution/records?select=gc_obo_gare_origine_r_name&group_by=gc_obo_gare_origine_r_name&order_by=gc_obo_gare_origine_r_name&limit=100&offset=${offset}';
 
     print("Requête envoyée à l'URL: $url");
 
