@@ -6,27 +6,26 @@ class ApiService {
   final String baseUrl = "https://data.sncf.com/api/explore/v2.1/catalog/datasets/";
 
   Future<List<FoundObject>> fetchFoundObjects({
-    String? city,
-    String? category,
-    String? nature,
-    String? nomRecordtypeSc,
-    String? orderBy,  // Sorting by date (asc/desc)
-    int totalRecords = 100, // Nombre total d'enregistrements à récupérer
+    String? city,  // Filtre sur la ville (gc_obo_gare_origine_r_name)
+    String? type,  // Filtre sur le type d'objet (gc_obo_type_c)
+    String? orderBy,  // Tri par date (asc/desc)
+    int totalRecords = 1000,  // Par défaut, récupérer 1000 enregistrements
   }) async {
     List<FoundObject> allObjects = [];
-    int limit = 100;
+    int limit = 100;  // Limite toujours à 100 pour l'API
     int offset = 0;
 
-    // Boucle pour paginer jusqu'à atteindre le nombre total d'enregistrements désirés
     while (allObjects.length < totalRecords) {
       final queryParams = <String, String>{};
 
-      if (city != null) {
-        _addToWhereClause(queryParams, 'gc_obo_gare_origine_r_name = "${Uri.encodeComponent(city)}"');
-      }
-
-      if (category != null) {
-        _addToWhereClause(queryParams, 'gc_obo_nature_c = "${Uri.encodeComponent(category)}"');
+      // Ajout du filtre sur la ville et le type d'objet dans la clause where
+      if (city != null && type != null) {
+        // Utilisation des guillemets simples pour la clause where
+        queryParams['where'] = "gc_obo_gare_origine_r_name = '$city' and gc_obo_type_c = '$type'";
+      } else if (city != null) {
+        queryParams['where'] = "gc_obo_gare_origine_r_name = '$city'";
+      } else if (type != null) {
+        queryParams['where'] = "gc_obo_type_c = '$type'";
       }
 
       if (orderBy != null) {
@@ -42,14 +41,16 @@ class ApiService {
         '/api/explore/v2.1/catalog/datasets/objets-trouves-restitution/records',
         queryParams,
       );
-      print(uri);
+
+      print(uri);  // Pour vérifier l'URL générée
+
       final response = await http.get(uri);
-      print(response.body);
+
       if (response.statusCode == 200) {
         List jsonResponse = json.decode(response.body)['results'];
         List<FoundObject> fetchedObjects = jsonResponse.map((data) => FoundObject.fromJson(data)).toList();
 
-        allObjects.addAll(fetchedObjects); // Ajoute les objets récupérés à la liste totale
+        allObjects.addAll(fetchedObjects);
 
         // Si moins de 100 résultats sont retournés, cela signifie que nous avons atteint la fin
         if (fetchedObjects.length < limit) {
@@ -57,17 +58,26 @@ class ApiService {
         }
 
         offset += limit; // Incrémente l'offset de 100 pour la prochaine requête
+
+        // Arrêter lorsque 1000 enregistrements ont été récupérés
+        if (offset >= totalRecords) {
+          break;
+        }
       } else {
         throw Exception('Failed to load found objects');
       }
     }
 
-    return allObjects; // Retourner la liste complète des objets
+    return allObjects;
   }
+
+
+
 
 
   void _addToWhereClause(Map<String, String> queryParams, String newCondition) {
     final whereClause = queryParams['where'] ?? '';
     queryParams['where'] = whereClause.isNotEmpty ? '$whereClause or $newCondition' : newCondition;
   }
+
 }

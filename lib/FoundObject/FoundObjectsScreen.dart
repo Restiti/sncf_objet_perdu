@@ -115,14 +115,18 @@ class _FoundObjectsScreenState extends State<FoundObjectsScreen> {
                                   ),
                                 ),
                                 TextButton(
-                                  onPressed: () {
-                                    // Navigate to the page showing all objects in this category
+                                  onPressed: () async {
+                                    print("Object type: ${objectType}");
+                                    // Charge jusqu'à 1000 enregistrements par lots de 100
+                                    final allObjects = await Provider.of<FoundObjectsProvider>(context, listen: false)
+                                        .fetchFoundObjects(type: objectType, totalRecords: 1000);
+
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) => CategoryObjectsScreen(
                                           category: objectType,
-                                          objects: objects,
+                                          objects: allObjects,  // Passe les 1000 premiers enregistrements de la catégorie
                                         ),
                                       ),
                                     );
