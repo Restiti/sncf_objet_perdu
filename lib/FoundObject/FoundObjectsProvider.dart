@@ -82,10 +82,12 @@ class FoundObjectsProvider with ChangeNotifier {
     notifyListeners();
 
     try {
+      DateTime startDate = DateTime(DateTime.now().year, 1, 1); // 1er janvier de l'année en cours
       // Charger les objets sans le filtre sur la catégorie
       _foundObjects = await _apiService.fetchFoundObjects(
         city: _gareOrigine,
         type: _type,
+        startDate: startDate,
         orderBy: _orderBy == 'date_desc' ? '-date' : 'date',
         totalRecords: 100,
       );
@@ -112,10 +114,12 @@ class FoundObjectsProvider with ChangeNotifier {
     notifyListeners();
 
     try {
+      DateTime startDate = DateTime(DateTime.now().year, 1, 1); // 1er janvier de l'année en cours
       // Charger les objets avec le filtre sur la catégorie
       List<FoundObject> allObjects = await _apiService.fetchFoundObjects(
         city: city,
         type: type,  // Application du filtre sur la catégorie ici
+        startDate: startDate,
         orderBy: orderBy,
         totalRecords: totalRecords,
       );

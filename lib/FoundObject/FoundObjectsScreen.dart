@@ -7,6 +7,7 @@ import '../Gare/GareProvider.dart';
 import 'FoundObject.dart';
 import 'FoundObjectItem.dart';
 import 'FoundObjectsProvider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class FoundObjectsScreen extends StatefulWidget {
   @override
@@ -30,6 +31,8 @@ class _FoundObjectsScreenState extends State<FoundObjectsScreen> {
   }
 
   Future<void> _refreshData() async {
+
+
     // Refresh found objects without category filter
     await Provider.of<FoundObjectsProvider>(context, listen: false).refreshFoundObjects();
 
