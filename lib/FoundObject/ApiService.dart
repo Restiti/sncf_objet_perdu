@@ -17,17 +17,19 @@ class ApiService {
     int limit = 100;  // Limite toujours à 100 pour l'API
     int offset = 0;
 
+    startDate = DateTime(startDate!.year, startDate.month, startDate.day);
+
     while (allObjects.length < totalRecords) {
       final queryParams = <String, String>{};
 
       if (city != null && type != null && startDate != null) {
-        queryParams['where'] = "gc_obo_gare_origine_r_name = '$city' and gc_obo_type_c = '$type' and date > '${startDate.toIso8601String()}'";
+        queryParams['where'] = "gc_obo_gare_origine_r_name = '$city' and gc_obo_type_c = '$type' and date >= '${startDate.toIso8601String()}'";
       } else if (city != null && startDate != null) {
-        queryParams['where'] = "gc_obo_gare_origine_r_name = '$city' and date > '${startDate.toIso8601String()}'";
+        queryParams['where'] = "gc_obo_gare_origine_r_name = '$city' and date >= '${startDate.toIso8601String()}'";
       } else if (type != null && startDate != null) {
-        queryParams['where'] = "gc_obo_type_c = '$type' and date > '${startDate.toIso8601String()}'";
+        queryParams['where'] = "gc_obo_type_c = '$type' and date >= '${startDate.toIso8601String()}'";
       } else if (startDate != null) {
-        queryParams['where'] = "date > '${startDate.toIso8601String()}'";
+        queryParams['where'] = "date >= '${startDate.toIso8601String()}'";
       } else if (city != null && type != null) {
         queryParams['where'] = "gc_obo_gare_origine_r_name = '$city' and gc_obo_type_c = '$type'";
       } else if (city != null) {

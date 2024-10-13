@@ -66,12 +66,10 @@ class FoundObjectsProvider with ChangeNotifier {
   void setGareOrigine(String? gare) {
     _gareOrigine = gare;
     notifyListeners();
-    refreshFoundObjects();  // Recharger les objets avec le filtre de gare
   }
   void setType(String? type) {
     _type = type;
     notifyListeners();
-    refreshFoundObjects();
   }
 
 
@@ -79,8 +77,9 @@ class FoundObjectsProvider with ChangeNotifier {
   Future<void> refreshFoundObjects() async {
     isLoading = true;
     hasError = false;
+    _foundObjects = [];
     notifyListeners();
-
+    print("Je refrsh found object");
     try {
       DateTime startDate = DateTime(DateTime.now().year, 1, 1); // 1er janvier de l'année en cours
       // Charger les objets sans le filtre sur la catégorie
@@ -91,7 +90,7 @@ class FoundObjectsProvider with ChangeNotifier {
         orderBy: _orderBy == 'date_desc' ? '-date' : 'date',
         totalRecords: 100,
       );
-      print("Refrsh _foundObjects${foundObjects}");
+      print(foundObjects);
     } catch (error) {
       hasError = true;
       errorMessage = error.toString();
@@ -101,6 +100,32 @@ class FoundObjectsProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<List<FoundObject>> fetchFoundObjectsSinceDate(DateTime startDate) async {
+    isLoading = true;
+    hasError = false;
+    notifyListeners();
+
+    try {
+      // Charger les objets à partir de la date spécifiée
+      List<FoundObject> allObjects = await _apiService.fetchFoundObjects(
+        city: _gareOrigine,
+        type: _type,
+        startDate: startDate,
+        orderBy: _orderBy == 'date_desc' ? '-date' : 'date',
+        totalRecords: 100,
+      );
+      return allObjects;
+    } catch (error) {
+      hasError = true;
+      errorMessage = error.toString();
+      return [];
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+
   // Récupérer les objets en fonction de la catégorie
   Future<void> fetchFoundObjectsByCategory({
     required String type,  // Filtre sur le type d'objet (gc_obo_type_c)
@@ -108,7 +133,6 @@ class FoundObjectsProvider with ChangeNotifier {
     String? orderBy,  // Tri par date
     int totalRecords = 100,  // Nombre total d'enregistrements à récupérer
   }) async {
-    print("Je fetch par catégorie");
     isLoading = true;
     hasError = false;
     notifyListeners();

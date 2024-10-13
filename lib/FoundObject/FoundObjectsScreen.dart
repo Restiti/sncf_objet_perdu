@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../CategoryObjects/CategoryObjectsScreen.dart';
 import '../CustomBottomSheet/CustomBottomSheet.dart';
 import '../Details/DetailsScreen.dart';
@@ -7,7 +8,6 @@ import '../Gare/GareProvider.dart';
 import 'FoundObject.dart';
 import 'FoundObjectItem.dart';
 import 'FoundObjectsProvider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class FoundObjectsScreen extends StatefulWidget {
   @override
@@ -31,25 +31,34 @@ class _FoundObjectsScreenState extends State<FoundObjectsScreen> {
   }
 
   Future<void> _refreshData() async {
-
-
     // Refresh found objects without category filter
     await Provider.of<FoundObjectsProvider>(context, listen: false).refreshFoundObjects();
 
     // Fetch the gares for the filter
-    await Provider.of<GareProvider>(context, listen: false).fetchGares().then((_) {
-      // Fetch the types for the filter
-      Provider.of<FoundObjectsProvider>(context, listen: false).fetchTypes().then((_) {
-        setState(() {
-          _customBottomSheet = CustomBottomSheet(
-            gareSuggestions: Provider.of<GareProvider>(context, listen: false).gares,
-            typeSuggestions: Provider.of<FoundObjectsProvider>(context, listen: false).types,
-          );
-        });
-      });
-    });
-  }
+    await Provider.of<GareProvider>(context, listen: false).fetchGares();
 
+    // Fetch the types for the filter
+   await Provider.of<FoundObjectsProvider>(context, listen: false).fetchTypes();
+
+    // Update the custom bottom sheet after fetching data
+    setState(() {
+      _customBottomSheet = CustomBottomSheet(
+        gareSuggestions: Provider.of<GareProvider>(context, listen: false).gares,
+        typeSuggestions: Provider.of<FoundObjectsProvider>(context, listen: false).types,
+      );
+    });
+
+    final prefs = await SharedPreferences.getInstance();
+    final lastRefreshDateString = prefs.getString('lastRefreshDate');
+    DateTime? lastRefreshDate;
+
+    if (lastRefreshDateString != null) {
+      lastRefreshDate = DateTime.parse(lastRefreshDateString);
+    }
+
+    // Mise à jour de la date
+    prefs.setString('lastRefreshDate', DateTime.now().toIso8601String());
+  }
 
   @override
   void dispose() {
@@ -67,11 +76,9 @@ class _FoundObjectsScreenState extends State<FoundObjectsScreen> {
       );
       _customBottomSheet.show(context, 'filtre');
     } else {
-
       print('No gares or types available to display in the filter');
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -227,5 +234,26 @@ class _FoundObjectsScreenState extends State<FoundObjectsScreen> {
         ),
       ),
     );
+  }
+
+  Future<Map<String, List<FoundObject>>> _getObjectsByType(FoundObjectsProvider provider) async {
+    var objectsByType = provider.objectsByType;
+    final prefs = await SharedPreferences.getInstance();
+    final lastRefreshDateString = prefs.getString('lastRefreshDate');
+    DateTime lastRefreshDate;
+    //final
+    if(lastRefreshDateString == null){
+      lastRefreshDate = DateTime.now().subtract(Duration(days: 1));
+    }else {
+      lastRefreshDate = DateTime.parse(lastRefreshDateString);
+    }
+    print("Fetch objet par type");
+    // Ajouter la catégorie "Depuis la dernière fois" en premier
+    objectsByType = {'Depuis la dernière fois': await provider.fetchFoundObjectsSinceDate(lastRefreshDate)}..addAll(objectsByType);
+
+
+    prefs.setString('lastRefreshDate', DateTime.now().toIso8601String());
+
+    return objectsByType;
   }
 }
