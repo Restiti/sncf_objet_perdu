@@ -25,10 +25,7 @@ class FoundObjectsProvider with ChangeNotifier {
 
   final ApiService _apiService = ApiService();
 
-  void setType(String? type) {
-    _type = type;
-    notifyListeners();
-  }
+
 
   Future<List<String>> fetchTypes({int limit = 100, int offset = 0}) async {
     final String url =
@@ -58,9 +55,6 @@ class FoundObjectsProvider with ChangeNotifier {
     }
   }
 
-
-
-
   // Fonction pour changer l'ordre de tri
   void setOrderBy(String orderBy) {
     _orderBy = orderBy;
@@ -74,6 +68,12 @@ class FoundObjectsProvider with ChangeNotifier {
     notifyListeners();
     refreshFoundObjects();  // Recharger les objets avec le filtre de gare
   }
+  void setType(String? type) {
+    _type = type;
+    notifyListeners();
+    refreshFoundObjects();
+  }
+
 
   // Récupérer les objets avec tri et filtres sans le filtre sur la catégorie
   Future<void> refreshFoundObjects() async {
