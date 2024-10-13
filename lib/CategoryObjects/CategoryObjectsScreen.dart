@@ -20,37 +20,35 @@ class _CategoryObjectsScreenState extends State<CategoryObjectsScreen> {
   @override
   void initState() {
     super.initState();
-    // Utiliser WidgetsBinding pour différer l'exécution après le premier build
+    // Exécute après le premier build pour charger les données
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadData();
     });
   }
 
   Future<void> _loadData() async {
-    // Charger les objets correspondant à la catégorie via le provider
-    await Provider.of<FoundObjectsProvider>(context, listen: false).fetchFoundObjectsByCategory(type: widget.category);
+    // Charger les objets en fonction de la catégorie sélectionnée
+    await Provider.of<FoundObjectsProvider>(context, listen: false)
+        .fetchFoundObjectsByCategory(type: widget.category);
   }
 
   Future<void> _loadDataBack() async {
-    // Charger les objets correspondant à la catégorie via le provider
-    await Provider.of<FoundObjectsProvider>(context, listen: false).refreshFoundObjects();
+    // Rafraîchir les objets lors du retour
+    await Provider.of<FoundObjectsProvider>(context, listen: false)
+        .refreshFoundObjects();
   }
 
   void _onPopInvokedWithResult(bool didPop, dynamic result) {
-    // Cette méthode est appelée lorsque l'utilisateur essaie de quitter cette page
-    print("User is navigating back with result: $result");
+    // Action lors de la navigation retour avec résultat
     if (didPop) {
-      print("Pop action confirmed");
       _loadDataBack();
-    } else {
-      print("Pop action was canceled");
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      onPopInvokedWithResult: _onPopInvokedWithResult,  // Détecte l'événement pop avec le résultat
+      onPopInvokedWithResult: _onPopInvokedWithResult, // Gestion retour avec résultat
       child: Scaffold(
         appBar: AppBar(
           title: Text('Objets trouvés - ${widget.category}'),
@@ -58,26 +56,26 @@ class _CategoryObjectsScreenState extends State<CategoryObjectsScreen> {
         body: Consumer<FoundObjectsProvider>(
           builder: (context, provider, child) {
             if (provider.isLoading) {
-              return Center(
-                child: CircularProgressIndicator(),  // Affichage du loader pendant le chargement
+              return const Center(
+                child: CircularProgressIndicator(), // Loader pendant le chargement
               );
             } else if (provider.hasError) {
               return Center(
-                child: Text('Erreur: ${provider.errorMessage}'),  // Affichage du message d'erreur
+                child: Text('Erreur: ${provider.errorMessage}'), // Message d'erreur
               );
             } else if (provider.foundObjects.isEmpty) {
-              return Center(
+              return const Center(
                 child: Text('Aucun objet trouvé.'),
               );
             }
 
+            // Liste des objets trouvés
             return ListView.builder(
               itemCount: provider.foundObjects.length,
               itemBuilder: (context, index) {
-                final foundObject = provider.foundObjects[index];
                 return Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: FoundObjectItem(object: foundObject),
+                  child: FoundObjectItem(object: provider.foundObjects[index]),
                 );
               },
             );

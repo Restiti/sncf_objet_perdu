@@ -5,40 +5,43 @@ import 'FoundObject.dart';
 class ApiService {
   final String baseUrl = "https://data.sncf.com/api/explore/v2.1/catalog/datasets/";
 
-
   Future<List<FoundObject>> fetchFoundObjects({
-    String? city,  // Filtre sur la ville (gc_obo_gare_origine_r_name)
-    String? type,  // Filtre sur le type d'objet (gc_obo_type_c)
+    String? city,  // Filtre sur la ville
+    String? type,  // Filtre sur le type d'objet
     DateTime? startDate, // Nouveau paramètre pour filtrer par date de début
     String? orderBy,  // Tri par date (asc/desc)
     int totalRecords = 1000,  // Par défaut, récupérer 1000 enregistrements
   }) async {
     List<FoundObject> allObjects = [];
-    int limit = 100;  // Limite toujours à 100 pour l'API
+    int limit = 100;  // Limite à 100 pour l'API
     int offset = 0;
 
-    startDate = DateTime(startDate!.year, startDate.month, startDate.day);
+    // Si `startDate` est fourni, ajuster au format de la date
+    String? formattedDate;
+    if (startDate != null) {
+      formattedDate = DateTime(startDate.year, startDate.month, startDate.day).toIso8601String();
+    }
 
     while (allObjects.length < totalRecords) {
       final queryParams = <String, String>{};
 
-      if (city != null && type != null && startDate != null) {
-        queryParams['where'] = "gc_obo_gare_origine_r_name = '$city' and gc_obo_type_c = '$type' and date >= '${startDate.toIso8601String()}'";
-      } else if (city != null && startDate != null) {
-        queryParams['where'] = "gc_obo_gare_origine_r_name = '$city' and date >= '${startDate.toIso8601String()}'";
-      } else if (type != null && startDate != null) {
-        queryParams['where'] = "gc_obo_type_c = '$type' and date >= '${startDate.toIso8601String()}'";
-      } else if (startDate != null) {
-        queryParams['where'] = "date >= '${startDate.toIso8601String()}'";
-      } else if (city != null && type != null) {
-        queryParams['where'] = "gc_obo_gare_origine_r_name = '$city' and gc_obo_type_c = '$type'";
-      } else if (city != null) {
-        queryParams['where'] = "gc_obo_gare_origine_r_name = '$city'";
-      } else if (type != null) {
-        queryParams['where'] = "gc_obo_type_c = '$type'";
+      // Construction de la clause "where"
+      String whereClause = '';
+      if (city != null) whereClause += "gc_obo_gare_origine_r_name = '$city'";
+      if (type != null) {
+        if (whereClause.isNotEmpty) whereClause += " and ";
+        whereClause += "gc_obo_type_c = '$type'";
+      }
+      if (formattedDate != null) {
+        if (whereClause.isNotEmpty) whereClause += " and ";
+        whereClause += "date >= '$formattedDate'";
       }
 
+      if (whereClause.isNotEmpty) {
+        queryParams['where'] = whereClause;
+      }
 
+      // Ajouter le paramètre de tri si fourni
       if (orderBy != null) {
         queryParams["order_by"] = orderBy;
       }
@@ -53,8 +56,6 @@ class ApiService {
         queryParams,
       );
 
-      print(uri);  // Pour vérifier l'URL générée
-
       final response = await http.get(uri);
 
       if (response.statusCode == 200) {
@@ -65,13 +66,13 @@ class ApiService {
 
         // Si moins de 100 résultats sont retournés, cela signifie que nous avons atteint la fin
         if (fetchedObjects.length < limit) {
-          break; // Sortir de la boucle si moins de 100 résultats
+          break;
         }
 
-        offset += limit; // Incrémente l'offset de 100 pour la prochaine requête
+        offset += limit; // Incrémente l'offset pour la prochaine requête
 
-        // Arrêter lorsque 1000 enregistrements ont été récupérés
-        if (offset >= totalRecords) {
+        // Arrêter lorsque le nombre total d'enregistrements est atteint
+        if (allObjects.length >= totalRecords) {
           break;
         }
       } else {
@@ -81,5 +82,4 @@ class ApiService {
 
     return allObjects;
   }
-
 }

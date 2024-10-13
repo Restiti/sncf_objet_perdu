@@ -24,58 +24,54 @@ class BottomSheetContent extends StatefulWidget {
 class _BottomSheetContentState extends State<BottomSheetContent> {
   String? _selectedSortOption;
   String? _selectedType;
+
   @override
   Widget build(BuildContext context) {
-    print("Gare: ${widget.gareSuggestions}");
-    print("Type:${widget.typeSuggestions}");
     return Column(
       children: <Widget>[
+        const SizedBox(height: 50),
 
-        Container(height: 50,),
-        // Sorting Options
+        // Options de tri
         if (widget.type == 'tri') ...[
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Container(
-              width: MediaQuery.of(context).size.width,  // Full width of the screen
-              child: DropdownButton<String>(
-                isExpanded: true,  // Ensure Dropdown takes full width
-                value: _selectedSortOption,
-                hint: const Text('Trier par'),
-                items: [
-                  DropdownMenuItem(
-                    value: 'date_asc',
-                    child: Text('Date croissante'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'date_desc',
-                    child: Text('Date décroissante'),
-                  ),
-                ],
-                onChanged: (value) {
-                  setState(() {
-                    _selectedSortOption = value;
-                  });
-                },
-              ),
+            child: DropdownButton<String>(
+              isExpanded: true,
+              value: _selectedSortOption,
+              hint: const Text('Trier par'),
+              items: const [
+                DropdownMenuItem(
+                  value: 'date_asc',
+                  child: Text('Date croissante'),
+                ),
+                DropdownMenuItem(
+                  value: 'date_desc',
+                  child: Text('Date décroissante'),
+                ),
+              ],
+              onChanged: (value) {
+                setState(() {
+                  _selectedSortOption = value;
+                });
+              },
             ),
           ),
           ElevatedButton(
             onPressed: () {
-              // Apply sorting in the provider
               if (_selectedSortOption != null) {
+                // Appliquer le tri dans le provider
                 Provider.of<FoundObjectsProvider>(context, listen: false)
                     .setOrderBy(_selectedSortOption == 'date_asc' ? 'date' : '-date');
                 Provider.of<FoundObjectsProvider>(context, listen: false)
                     .refreshFoundObjects();
               }
-              Navigator.pop(context); // Close the bottom sheet
+              Navigator.pop(context); // Fermer la bottom sheet
             },
             child: const Text('Appliquer le tri'),
           ),
         ],
 
-        // Filtering Options
+        // Options de filtrage
         if (widget.type == 'filtre')
           Expanded(
             child: Consumer<GareProvider>(
@@ -106,6 +102,7 @@ class _BottomSheetContentState extends State<BottomSheetContent> {
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
+                        // Appliquer les filtres dans le provider
                         Provider.of<FoundObjectsProvider>(context, listen: false)
                             .setGareOrigine(
                           gareProvider.selectedGares.isNotEmpty
@@ -116,7 +113,7 @@ class _BottomSheetContentState extends State<BottomSheetContent> {
                             .setType(_selectedType);
                         Provider.of<FoundObjectsProvider>(context, listen: false)
                             .refreshFoundObjects();
-                        Navigator.pop(context); // Close the bottom sheet
+                        Navigator.pop(context); // Fermer la bottom sheet
                       },
                       child: const Text('Appliquer les filtres'),
                     ),
@@ -125,7 +122,6 @@ class _BottomSheetContentState extends State<BottomSheetContent> {
               },
             ),
           ),
-
       ],
     );
   }

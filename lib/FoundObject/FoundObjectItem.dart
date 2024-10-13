@@ -30,8 +30,12 @@ class FoundObjectItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Formatage de la date et l'heure de restitution é
+    // Formatage de la date et l'heure de restitution
     String formattedDate = formatDateTime(object.date);
+
+    // Styles centralisés
+    const TextStyle boldTextStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
+    const EdgeInsets contentPadding = EdgeInsets.symmetric(horizontal: 12.0);
 
     return GestureDetector(
       onTap: () {
@@ -44,7 +48,7 @@ class FoundObjectItem extends StatelessWidget {
       },
       child: Container(
         width: 220,
-        margin: EdgeInsets.symmetric(horizontal: 12.0),
+        margin: const EdgeInsets.symmetric(horizontal: 12.0),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
@@ -53,7 +57,7 @@ class FoundObjectItem extends StatelessWidget {
               color: Colors.grey.withOpacity(0.5),
               spreadRadius: 3,
               blurRadius: 6,
-              offset: Offset(0, 3),
+              offset: const Offset(0, 3),
             ),
           ],
         ),
@@ -62,25 +66,19 @@ class FoundObjectItem extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.all(12.0),
-              child: Text(
-                object.gcOboNatureC,
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
+              child: Text(object.gcOboNatureC, style: boldTextStyle),
             ),
             Padding(
               padding: const EdgeInsets.all(12.0),
-              child: Text(
-                object.gcOboTypeC,
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
+              child: Text(object.gcOboTypeC, style: boldTextStyle),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              padding: contentPadding,
               child: Text(object.gcOboGareOrigineRName),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0),
-              child: Text('Reçu le: $formattedDate'), // Afficher la date de restitution formatée
+              child: Text('Reçu le: $formattedDate'), // Afficher la date formatée
             ),
           ],
         ),

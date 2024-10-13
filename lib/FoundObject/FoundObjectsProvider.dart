@@ -15,7 +15,6 @@ class FoundObjectsProvider with ChangeNotifier {
   bool isLoading = false;
   bool hasError = false;
   String errorMessage = '';
-  int _limit = 100;
   String _orderBy = 'date_desc';
   String? _gareOrigine;
   String? _type;
@@ -32,7 +31,7 @@ class FoundObjectsProvider with ChangeNotifier {
   void setOrderBy(String orderBy) {
     _orderBy = orderBy;
     notifyListeners();
-    refreshFoundObjects();  // Recharger les objets avec le nouveau tri
+    refreshFoundObjects(); // Recharger les objets avec le nouveau tri
   }
 
   // Fonction pour définir la gare d'origine à filtrer
@@ -47,26 +46,30 @@ class FoundObjectsProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // Réinitialiser les objets trouvés et les types
+  void _resetObjects() {
+    _foundObjects = [];
+    _objectsByType = {};
+  }
+
+  // Gestion des erreurs centralisée
+  void _handleError(Object error) {
+    hasError = true;
+    errorMessage = error.toString();
+    print("Erreur: $error");
+    notifyListeners();
+  }
+
   Future<void> refreshFoundObjects() async {
     isLoading = true;
     hasError = false;
-    _foundObjects = [];
-    _objectsByType = {};  // Réinitialiser objectsByType avant le rafraîchissement
+    _resetObjects();
     notifyListeners();
     print("Je rafraîchis les objets trouvés");
 
     try {
-      // Récupérer la date de la dernière actualisation depuis SharedPreferences
-      final prefs = await SharedPreferences.getInstance();
-      final lastRefreshDateString = prefs.getString('lastRefreshDate');
-      DateTime lastRefreshDate;
-
-      // Si aucune date n'a été trouvée, définir une date par défaut (hier)
-      if (lastRefreshDateString == null) {
-        lastRefreshDate = DateTime.now().subtract(Duration(days: 1));
-      } else {
-        lastRefreshDate = DateTime.parse(lastRefreshDateString);
-      }
+      // Récupérer la date de la dernière actualisation
+      DateTime lastRefreshDate = await _getLastRefreshDate();
 
       print("Dernière date d'actualisation: $lastRefreshDate");
 
@@ -86,41 +89,52 @@ class FoundObjectsProvider with ChangeNotifier {
       // Regrouper les objets par type
       _objectsByType = _groupObjectsByType(allObjects);
 
-      // Ajouter la catégorie "Depuis la dernière fois" avec les objets trouvés récemment
+      // Ajouter les objets trouvés récemment
       if (objectsSinceLastRefresh.isNotEmpty) {
-        // On s'assure que "Depuis la dernière fois" est ajouté en premier
         _objectsByType = {
           'Depuis la dernière fois': objectsSinceLastRefresh,
-          ..._objectsByType,  // Ajout des autres catégories
+          ..._objectsByType,
         };
       }
 
-      // Mettre à jour la date de dernière actualisation dans SharedPreferences
-      await prefs.setString('lastRefreshDate', DateTime.now().toIso8601String());
+      // Mettre à jour la date de dernière actualisation
+      await _setLastRefreshDate();
 
-      // Stocker tous les objets trouvés dans _foundObjects
+      // Mettre à jour la liste des objets trouvés
       _foundObjects = _objectsByType.values.expand((x) => x).toList();
 
       print("Objets trouvés après rafraîchissement: $_foundObjects");
     } catch (error) {
-      hasError = true;
-      errorMessage = error.toString();
-      print("Erreur lors du rafraîchissement des objets trouvés: $error");
+      _handleError(error);
     }
 
     isLoading = false;
     notifyListeners();
   }
 
+  // Récupérer la date de la dernière actualisation depuis SharedPreferences
+  Future<DateTime> _getLastRefreshDate() async {
+    final prefs = await SharedPreferences.getInstance();
+    final lastRefreshDateString = prefs.getString('lastRefreshDate');
+
+    if (lastRefreshDateString == null) {
+      return DateTime.now().subtract(Duration(days: 1));
+    } else {
+      return DateTime.parse(lastRefreshDateString);
+    }
+  }
+
+  // Mettre à jour la date de dernière actualisation dans SharedPreferences
+  Future<void> _setLastRefreshDate() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('lastRefreshDate', DateTime.now().toIso8601String());
+  }
 
   // Méthode pour regrouper les objets par type
   Map<String, List<FoundObject>> _groupObjectsByType(List<FoundObject> objects) {
     Map<String, List<FoundObject>> groupedObjects = {};
     for (var object in objects) {
-      if (!groupedObjects.containsKey(object.gcOboTypeC)) {
-        groupedObjects[object.gcOboTypeC] = [];
-      }
-      groupedObjects[object.gcOboTypeC]!.add(object);
+      groupedObjects.putIfAbsent(object.gcOboTypeC, () => []).add(object);
     }
     return groupedObjects;
   }
@@ -131,7 +145,6 @@ class FoundObjectsProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      // Charger les objets à partir de la date spécifiée
       List<FoundObject> allObjects = await _apiService.fetchFoundObjects(
         city: _gareOrigine,
         type: _type,
@@ -141,8 +154,7 @@ class FoundObjectsProvider with ChangeNotifier {
       );
       return allObjects;
     } catch (error) {
-      hasError = true;
-      errorMessage = error.toString();
+      _handleError(error);
       return [];
     } finally {
       isLoading = false;
@@ -150,12 +162,11 @@ class FoundObjectsProvider with ChangeNotifier {
     }
   }
 
-  // Récupérer les objets en fonction de la catégorie
   Future<void> fetchFoundObjectsByCategory({
-    required String type,  // Filtre sur le type d'objet (gc_obo_type_c)
-    String? city,  // Filtre sur la ville
-    String? orderBy,  // Tri par date
-    int totalRecords = 100,  // Nombre total d'enregistrements à récupérer
+    required String type,
+    String? city,
+    String? orderBy,
+    int totalRecords = 100,
   }) async {
     isLoading = true;
     hasError = false;
@@ -163,20 +174,17 @@ class FoundObjectsProvider with ChangeNotifier {
 
     try {
       DateTime startDate = DateTime(DateTime.now().year, 1, 1); // 1er janvier de l'année en cours
-      // Charger les objets avec le filtre sur la catégorie
       List<FoundObject> allObjects = await _apiService.fetchFoundObjects(
         city: city,
-        type: type,  // Application du filtre sur la catégorie ici
+        type: type,
         startDate: startDate,
         orderBy: orderBy,
         totalRecords: totalRecords,
       );
 
-      // Mise à jour de la variable foundObjects après récupération
       _foundObjects = allObjects;
     } catch (error) {
-      hasError = true;
-      errorMessage = error.toString();
+      _handleError(error);
     }
 
     isLoading = false;
@@ -185,7 +193,7 @@ class FoundObjectsProvider with ChangeNotifier {
 
   Future<List<String>> fetchTypes({int limit = 100, int offset = 0}) async {
     final String url =
-        'https://data.sncf.com/api/explore/v2.1/catalog/datasets/objets-trouves-restitution/records?select=gc_obo_type_c&group_by=gc_obo_type_c&order_by=gc_obo_type_c&limit=100&offset=${offset}';
+        'https://data.sncf.com/api/explore/v2.1/catalog/datasets/objets-trouves-restitution/records?select=gc_obo_type_c&group_by=gc_obo_type_c&order_by=gc_obo_type_c&limit=100&offset=$offset';
 
     print("Requête envoyée à l'URL: $url");
 
@@ -195,13 +203,7 @@ class FoundObjectsProvider with ChangeNotifier {
       final jsonResponse = json.decode(response.body);
       final List<dynamic> results = jsonResponse['results'];
 
-      // Extraire les types (gc_obo_type_c) de la réponse
-      _types = results
-          .map((item) =>
-      item['gc_obo_type_c'] != null
-          ? item['gc_obo_type_c'] as String
-          : 'Type inconnu')
-          .toList();
+      _types = results.map((item) => item['gc_obo_type_c'] ?? 'Type inconnu').cast<String>().toList();
 
       notifyListeners(); // Informer les widgets écoutant cette classe de la mise à jour
 
@@ -211,5 +213,3 @@ class FoundObjectsProvider with ChangeNotifier {
     }
   }
 }
-
-

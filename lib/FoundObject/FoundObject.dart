@@ -19,7 +19,12 @@ class FoundObject {
 
   @override
   String toString() {
-    return 'FoundObject(type: $gcOboTypeC, nature: $gcOboNatureC, gare: $gcOboGareOrigineRName, date: $date)';
+    return 'FoundObject('
+        'type: $gcOboTypeC, '
+        'nature: $gcOboNatureC, '
+        'gare: $gcOboGareOrigineRName, '
+        'date: $date'
+        ')';
   }
 
   factory FoundObject.fromJson(Map<String, dynamic> json) {
@@ -27,10 +32,10 @@ class FoundObject {
       date: json['date'] ?? 'Date inconnue',
       gcOboDateHeureRestitutionC: json['gc_obo_date_heure_restitution_c'],
       gcOboGareOrigineRName: json['gc_obo_gare_origine_r_name'] ?? 'Gare inconnue',
-      gcOboGareOrigineRCodeUicC: json['gc_obo_gare_origine_r_code_uic_c'] ?? '',
+      gcOboGareOrigineRCodeUicC: json['gc_obo_gare_origine_r_code_uic_c'] ?? 'Code UIC inconnu',
       gcOboNatureC: json['gc_obo_nature_c'] ?? 'Nature inconnue',
       gcOboTypeC: json['gc_obo_type_c'] ?? 'Type inconnu',
-      gcOboNomRecordtypeScC: json['gc_obo_nom_recordtype_sc_c'] ?? '',
+      gcOboNomRecordtypeScC: json['gc_obo_nom_recordtype_sc_c'] ?? 'Nom record inconnu',
     );
   }
 }

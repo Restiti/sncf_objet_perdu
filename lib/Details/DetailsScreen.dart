@@ -8,9 +8,12 @@ class DetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const TextStyle boldStyle = TextStyle(fontSize: 18, fontWeight: FontWeight.bold);
+    const TextStyle normalStyle = TextStyle(fontSize: 16);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Détails de l\'objet'),
+        title: const Text('Détails de l\'objet'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -19,27 +22,27 @@ class DetailsScreen extends StatelessWidget {
           children: [
             Text(
               'Nature: ${foundObject.gcOboNatureC}',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: boldStyle,
             ),
             const SizedBox(height: 8),
             Text(
               'Type: ${foundObject.gcOboTypeC}',
-              style: TextStyle(fontSize: 16),
+              style: normalStyle,
             ),
             const SizedBox(height: 8),
             Text(
               'Gare d\'origine: ${foundObject.gcOboGareOrigineRName}',
-              style: TextStyle(fontSize: 16),
+              style: normalStyle,
             ),
             const SizedBox(height: 8),
             Text(
               'Date: ${foundObject.date}',
-              style: TextStyle(fontSize: 16),
+              style: normalStyle,
             ),
             const SizedBox(height: 8),
             Text(
               'Nom record: ${foundObject.gcOboNomRecordtypeScC}',
-              style: TextStyle(fontSize: 16),
+              style: normalStyle,
             ),
           ],
         ),
