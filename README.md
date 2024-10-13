@@ -53,7 +53,6 @@ Cette application mobile permet aux voyageurs de consulter la liste des objets t
 
 ### Améliorations de l'Expérience Utilisateur
 - **Optimisation du design** : Améliorer l'interface graphique avec des animations plus fluides et des transitions douces.
-- **Internationalisation** : Prévoir une version multilingue de l'application pour les utilisateurs internationaux.
 
 ## Conclusion
 
