@@ -11,14 +11,55 @@ class FoundObjectsProvider with ChangeNotifier {
   bool isLoading = false;
   bool hasError = false;
   String errorMessage = '';
-
+  int _limit =100;
   String _orderBy = 'date_desc';
   String? _gareOrigine;
 
   String get orderBy => _orderBy;
   String? get gareOrigine => _gareOrigine;
 
+  List<String> _types = [];
+  List<String> get types => _types;
+
+  String? _type;
+
   final ApiService _apiService = ApiService();
+
+  void setType(String? type) {
+    _type = type;
+    notifyListeners();
+  }
+
+  Future<List<String>> fetchTypes({int limit = 100, int offset = 0}) async {
+    final String url =
+        'https://data.sncf.com/api/explore/v2.1/catalog/datasets/objets-trouves-restitution/records?select=gc_obo_type_c&group_by=gc_obo_type_c&order_by=gc_obo_type_c&limit=100&offset=${offset}';
+
+    print("Requête envoyée à l'URL: $url");
+
+    final response = await http.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      final jsonResponse = json.decode(response.body);
+      final List<dynamic> results = jsonResponse['results'];
+
+      // Extraire les types (gc_obo_type_c) de la réponse
+      _types = results
+          .map((item) =>
+      item['gc_obo_type_c'] != null
+          ? item['gc_obo_type_c'] as String
+          : 'Type inconnu')
+          .toList();
+
+      notifyListeners(); // Informer les widgets écoutant cette classe de la mise à jour
+
+      return _types;
+    } else {
+      throw Exception('Erreur lors de la récupération des types. Statut: ${response.statusCode}');
+    }
+  }
+
+
+
 
   // Fonction pour changer l'ordre de tri
   void setOrderBy(String orderBy) {
@@ -44,9 +85,11 @@ class FoundObjectsProvider with ChangeNotifier {
       // Charger les objets sans le filtre sur la catégorie
       _foundObjects = await _apiService.fetchFoundObjects(
         city: _gareOrigine,
+        type: _type,
         orderBy: _orderBy == 'date_desc' ? '-date' : 'date',
         totalRecords: 100,
       );
+      print("Refrsh _foundObjects${foundObjects}");
     } catch (error) {
       hasError = true;
       errorMessage = error.toString();

@@ -31,10 +31,11 @@ class GareProvider with ChangeNotifier {
 
     try {
       List<String> allGares = await _gareService.fetchAllGares();
-
+      print("In fetchGares: ${allGares}");
       // Utilisation d'un Set pour supprimer les doublons
       Set<String> uniqueGares = allGares.toSet();
       _gares = uniqueGares.toList();  // Convertir en List pour l'utilisation dans l'UI
+      print("After In fetchGares: ${allGares}");
 
     } catch (e) {
       _hasError = true;

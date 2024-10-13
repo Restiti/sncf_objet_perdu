@@ -8,11 +8,13 @@ import '../utils/SearchProvider.dart';
 class BottomSheetContent extends StatefulWidget {
   final String type;
   final List<String> gareSuggestions;
+  final List<String> typeSuggestions;
 
   const BottomSheetContent({
     Key? key,
     required this.type,
     required this.gareSuggestions,
+    required this.typeSuggestions,
   }) : super(key: key);
 
   @override
@@ -21,9 +23,11 @@ class BottomSheetContent extends StatefulWidget {
 
 class _BottomSheetContentState extends State<BottomSheetContent> {
   String? _selectedSortOption;
-
+  String? _selectedType;
   @override
   Widget build(BuildContext context) {
+    print("Gare: ${widget.gareSuggestions}");
+    print("Type:${widget.typeSuggestions}");
     return Column(
       children: <Widget>[
 
@@ -83,6 +87,23 @@ class _BottomSheetContentState extends State<BottomSheetContent> {
                       child: MySearchBar(suggestions: widget.gareSuggestions),
                     ),
                     const SizedBox(height: 16),
+                    DropdownButton<String>(
+                      isExpanded: true,
+                      value: _selectedType,
+                      hint: const Text('Type'),
+                      items: widget.typeSuggestions.map((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          _selectedType = newValue;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
                         Provider.of<FoundObjectsProvider>(context, listen: false)
@@ -91,6 +112,8 @@ class _BottomSheetContentState extends State<BottomSheetContent> {
                               ? gareProvider.selectedGares.join(',')
                               : null,
                         );
+                        Provider.of<FoundObjectsProvider>(context, listen: false)
+                            .setType(_selectedType);
                         Provider.of<FoundObjectsProvider>(context, listen: false)
                             .refreshFoundObjects();
                         Navigator.pop(context); // Close the bottom sheet
@@ -102,6 +125,7 @@ class _BottomSheetContentState extends State<BottomSheetContent> {
               },
             ),
           ),
+
       ],
     );
   }

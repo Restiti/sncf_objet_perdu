@@ -21,7 +21,7 @@ class _FoundObjectsScreenState extends State<FoundObjectsScreen> {
   void initState() {
     super.initState();
 
-    _customBottomSheet = CustomBottomSheet(gareSuggestions: []);
+    _customBottomSheet = CustomBottomSheet(gareSuggestions: [], typeSuggestions: []);
 
     // Refresh the found objects and fetch the gares for the filter
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -35,13 +35,18 @@ class _FoundObjectsScreenState extends State<FoundObjectsScreen> {
 
     // Fetch the gares for the filter
     await Provider.of<GareProvider>(context, listen: false).fetchGares().then((_) {
-      setState(() {
-        _customBottomSheet = CustomBottomSheet(
-          gareSuggestions: Provider.of<GareProvider>(context, listen: false).gares,
-        );
+      // Fetch the types for the filter
+      Provider.of<FoundObjectsProvider>(context, listen: false).fetchTypes().then((_) {
+        setState(() {
+          _customBottomSheet = CustomBottomSheet(
+            gareSuggestions: Provider.of<GareProvider>(context, listen: false).gares,
+            typeSuggestions: Provider.of<FoundObjectsProvider>(context, listen: false).types,
+          );
+        });
       });
     });
   }
+
 
   @override
   void dispose() {
@@ -49,16 +54,21 @@ class _FoundObjectsScreenState extends State<FoundObjectsScreen> {
     super.dispose();
   }
 
-  // Show filter for gares
   void _showFilter() {
     final gareProvider = Provider.of<GareProvider>(context, listen: false);
-    if (gareProvider.gares.isNotEmpty) {
-      _customBottomSheet = CustomBottomSheet(gareSuggestions: gareProvider.gares);
+    final foundObjectsProvider = Provider.of<FoundObjectsProvider>(context, listen: false);
+    if (gareProvider.gares.isNotEmpty || foundObjectsProvider.types.isNotEmpty) {
+      _customBottomSheet = CustomBottomSheet(
+        gareSuggestions: gareProvider.gares,
+        typeSuggestions: foundObjectsProvider.types,
+      );
       _customBottomSheet.show(context, 'filtre');
     } else {
-      print('No gares available to display in the filter');
+
+      print('No gares or types available to display in the filter');
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

@@ -5,6 +5,28 @@ import 'FoundObject.dart';
 class ApiService {
   final String baseUrl = "https://data.sncf.com/api/explore/v2.1/catalog/datasets/";
 
+  Future<List<String>> fetchTypes() async {
+    final uri = Uri.https(
+      'data.sncf.com',
+      '/api/explore/v2.1/catalog/datasets/objets-trouves-restitution/records',
+      {'select': 'gc_obo_type_c', 'distinct': 'true'},
+    );
+
+    final response = await http.get(uri);
+
+    if (response.statusCode == 200) {
+      List jsonResponse = json.decode(response.body)['results'];
+      List<String> types = jsonResponse.map((data) => data['gc_obo_type_c'] as String).toList();
+
+      return types;
+    } else {
+      throw Exception('Failed to load types');
+    }
+  }
+
+
+
+
   Future<List<FoundObject>> fetchFoundObjects({
     String? city,  // Filtre sur la ville (gc_obo_gare_origine_r_name)
     String? type,  // Filtre sur le type d'objet (gc_obo_type_c)

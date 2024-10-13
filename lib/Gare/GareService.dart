@@ -13,9 +13,11 @@ class GareService {
 
     while (moreData) {
       final List<String> gares = await fetchGares(limit: _limit, offset: offset);
+      print("FetchAll: ${gares}");
       print("Je fetch");
       if (gares.isNotEmpty) {
         allGares.addAll(gares);
+        print("AllGare: ${allGares}");
         print("Offset '${offset}'");
         offset += _limit;  // Incrémenter l'offset pour récupérer les éléments suivants
       } else {
@@ -34,11 +36,10 @@ class GareService {
     print("Requête envoyée à l'URL: $url");
 
     final response = await http.get(Uri.parse(url));
-
     if (response.statusCode == 200) {
       final jsonResponse = json.decode(response.body);
       final List<dynamic> results = jsonResponse['results'];
-
+        print(results);
       // Extraire les noms des gares (gc_obo_gare_origine_r_name) de la réponse
       return results
           .map((item) =>
