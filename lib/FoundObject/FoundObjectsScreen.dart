@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../CategoryObjects/CategoryObjectsScreen.dart';
 import '../CustomBottomSheet/CustomBottomSheet.dart';
 import '../Details/DetailsScreen.dart';
@@ -48,16 +47,7 @@ class _FoundObjectsScreenState extends State<FoundObjectsScreen> {
       );
     });
 
-    final prefs = await SharedPreferences.getInstance();
-    final lastRefreshDateString = prefs.getString('lastRefreshDate');
-    DateTime? lastRefreshDate;
 
-    if (lastRefreshDateString != null) {
-      lastRefreshDate = DateTime.parse(lastRefreshDateString);
-    }
-
-    // Mise à jour de la date
-    prefs.setString('lastRefreshDate', DateTime.now().toIso8601String());
   }
 
   @override
@@ -236,24 +226,5 @@ class _FoundObjectsScreenState extends State<FoundObjectsScreen> {
     );
   }
 
-  Future<Map<String, List<FoundObject>>> _getObjectsByType(FoundObjectsProvider provider) async {
-    var objectsByType = provider.objectsByType;
-    final prefs = await SharedPreferences.getInstance();
-    final lastRefreshDateString = prefs.getString('lastRefreshDate');
-    DateTime lastRefreshDate;
-    //final
-    if(lastRefreshDateString == null){
-      lastRefreshDate = DateTime.now().subtract(Duration(days: 1));
-    }else {
-      lastRefreshDate = DateTime.parse(lastRefreshDateString);
-    }
-    print("Fetch objet par type");
-    // Ajouter la catégorie "Depuis la dernière fois" en premier
-    objectsByType = {'Depuis la dernière fois': await provider.fetchFoundObjectsSinceDate(lastRefreshDate)}..addAll(objectsByType);
 
-
-    prefs.setString('lastRefreshDate', DateTime.now().toIso8601String());
-
-    return objectsByType;
-  }
 }
